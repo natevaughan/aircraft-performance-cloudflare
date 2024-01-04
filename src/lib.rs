@@ -1,8 +1,10 @@
-use serde_json::json;
+use serde_json;
 use worker::*;
+use crate::performance::{performance, Criteria};
 use std::collections::HashMap;
 
 mod utils;
+mod performance;
 
 fn log_request(req: &Request) {
     console_log!(
@@ -25,21 +27,23 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
     // catch-alls to match on specific patterns. Alternatively, use `Router::with_data(D)` to
     // provide arbitrary data that will be accessible in each route via the `ctx.data()` method.
     let router = Router::with_data([
-        ("Mercury", 0.4),
-        ("Venus", 0.7),
-        ("Earth", 1.0),
-        ("Mars", 1.5),
+        ("arrow-iii", true)
     ]);
     router
         .get("/", |_, _| Response::ok("Aircraft Performance calculators."))
         .post_async("/performance/:id", |mut req, ctx| async move {
-            let res = req.bytes().await;
-            let data = res.unwrap();
-            let h: HashMap<String, i64> = serde_json::from_slice(&data).unwrap();
-        
-            let hsh = ctx.data;
-            console_log!("{:?}", h);
-            return Response::from_json(&HashMap::from(hsh));
+            let profiles = HashMap::from(ctx.data);
+            if let Some(id) = ctx.param("id") {
+                console_log!("{}, {:?}", id, profiles);
+                let res = req.bytes().await;
+                let data = res.unwrap();
+                let h: Criteria = serde_json::from_slice(&data).unwrap();
+            
+                let p = performance(h.temp_c, h.pressure_alt, h.take_off_weight, h.headwind);
+                return Response::from_json(&p);
+            
+            }
+            Response::error("Not found", 404)
         })
         .run(req, env)
         .await

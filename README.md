@@ -13,11 +13,11 @@ This project targets `wasm-unknown-unknown` and all crates and modules used in m
 ## Development
 
 ```bash
-wrangler dev
+npx wrangler dev
 ```
 
 ## Deployment
 
 ```bash
-wrangler publish
+npx wrangler publish
 ```
