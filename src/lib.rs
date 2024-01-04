@@ -30,7 +30,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         ("arrow-iii", true)
     ]);
     router
-        .get("/", |_, _| Response::ok("Aircraft Performance calculators."))
+        .get("/", |_, _| Response::ok("Aircraft Performance calculators\n\nUsage:\nPOST /performance/{aircraft-id}\nContent-Type: application/json\n{\"temp_c\": <number>, \"pressure_alt\": <number>, \"take_off_weight\": <number>, \"headwind\": <number>}\n\nCurrently implemented:\n - Piper Arrow III (/performance/arrow-iii)"))
         .post_async("/performance/:id", |mut req, ctx| async move {
             let profiles = HashMap::from(ctx.data);
             if let Some(id) = ctx.param("id") {
